@@ -1,0 +1,203 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Default deny all access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global helpers
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isBootstrappedAdmin() {
+      return isSignedIn() && request.auth.token.email == 'amosdav27@gmail.com';
+    }
+
+    function isAdmin() {
+      return isBootstrappedAdmin() || (isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid)));
+    }
+
+    // Validation helper for Bookings
+    function isValidBooking(data) {
+      return data.keys().hasAll([
+        'bookingReference',
+        'roomId',
+        'roomName',
+        'checkIn',
+        'checkOut',
+        'nights',
+        'roomsCount',
+        'adults',
+        'guestName',
+        'guestEmail',
+        'totalAmount',
+        'status',
+        'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'bookingReference',
+        'userId',
+        'roomId',
+        'roomName',
+        'checkIn',
+        'checkOut',
+        'nights',
+        'roomsCount',
+        'adults',
+        'children',
+        'guestName',
+        'guestEmail',
+        'guestPhone',
+        'specialRequests',
+        'estimatedArrivalTime',
+        'totalAmount',
+        'status',
+        'createdAt'
+      ]) &&
+      data.bookingReference is string && data.bookingReference.size() > 0 && data.bookingReference.size() <= 32 &&
+      data.roomId is string && data.roomId.size() > 0 && data.roomId.size() <= 64 &&
+      data.roomName is string && data.roomName.size() > 0 && data.roomName.size() <= 128 &&
+      data.checkIn is string && data.checkIn.size() == 10 &&
+      data.checkOut is string && data.checkOut.size() == 10 &&
+      data.nights is number && data.nights > 0 && data.nights <= 365 &&
+      data.roomsCount is number && data.roomsCount > 0 && data.roomsCount <= 10 &&
+      data.adults is number && data.adults > 0 && data.adults <= 20 &&
+      data.guestName is string && data.guestName.size() > 0 && data.guestName.size() <= 128 &&
+      data.guestEmail is string && data.guestEmail.size() > 0 && data.guestEmail.size() <= 128 &&
+      data.totalAmount is number && data.totalAmount >= 0 &&
+      data.status in ['confirmed', 'cancelled', 'completed'] &&
+      data.createdAt is string && data.createdAt.size() <= 64 &&
+      (!('userId' in data) || (data.userId is string && data.userId.size() <= 128)) &&
+      (!('children' in data) || (data.children is number && data.children >= 0 && data.children <= 20)) &&
+      (!('guestPhone' in data) || (data.guestPhone is string && data.guestPhone.size() <= 32)) &&
+      (!('specialRequests' in data) || (data.specialRequests is string && data.specialRequests.size() <= 1000)) &&
+      (!('estimatedArrivalTime' in data) || (data.estimatedArrivalTime is string && data.estimatedArrivalTime.size() <= 64));
+    }
+
+    // Validation helper for Dining Reservations
+    function isValidDiningReservation(data) {
+      return data.keys().hasAll([
+        'venueId',
+        'venueName',
+        'name',
+        'email',
+        'date',
+        'time',
+        'guests',
+        'createdAt'
+      ]) &&
+      data.keys().hasOnly([
+        'venueId',
+        'venueName',
+        'name',
+        'email',
+        'phone',
+        'date',
+        'time',
+        'guests',
+        'notes',
+        'createdAt'
+      ]) &&
+      data.venueId is string && data.venueId.size() > 0 && data.venueId.size() <= 64 &&
+      data.venueName is string && data.venueName.size() > 0 && data.venueName.size() <= 128 &&
+      data.name is string && data.name.size() > 0 && data.name.size() <= 128 &&
+      data.email is string && data.email.size() > 0 && data.email.size() <= 128 &&
+      data.date is string && data.date.size() == 10 &&
+      data.time is string && data.time.size() > 0 && data.time.size() <= 16 &&
+      data.guests is string && data.guests.size() > 0 && data.guests.size() <= 32 &&
+      data.createdAt is string && data.createdAt.size() <= 64 &&
+      (!('phone' in data) || (data.phone is string && data.phone.size() <= 32)) &&
+      (!('notes' in data) || (data.notes is string && data.notes.size() <= 500));
+    }
+
+    // Validation helper for Inquiries
+    function isValidInquiry(data) {
+      return data.keys().hasAll(['name', 'email', 'category', 'message', 'createdAt']) &&
+      data.keys().hasOnly(['name', 'email', 'phone', 'category', 'message', 'createdAt']) &&
+      data.name is string && data.name.size() > 0 && data.name.size() <= 128 &&
+      data.email is string && data.email.size() > 0 && data.email.size() <= 128 &&
+      data.category is string && data.category.size() > 0 && data.category.size() <= 64 &&
+      data.message is string && data.message.size() > 0 && data.message.size() <= 2000 &&
+      data.createdAt is string && data.createdAt.size() <= 64 &&
+      (!('phone' in data) || (data.phone is string && data.phone.size() <= 32));
+    }
+
+    // Validation helper for Newsletter Subscribers
+    function isValidNewsletterSubscriber(data) {
+      return data.keys().hasAll(['email', 'subscribedAt']) &&
+      data.keys().hasOnly(['email', 'subscribedAt']) &&
+      data.email is string && data.email.size() > 0 && data.email.size() <= 128 &&
+      data.subscribedAt is string && data.subscribedAt.size() <= 64;
+    }
+
+    // Bookings collection
+    match /bookings/{bookingId} {
+      allow get: if isValidId(bookingId) && (
+        isAdmin() ||
+        (isSignedIn() && resource.data.userId == request.auth.uid)
+      );
+
+      allow list: if isAdmin() || (
+        isSignedIn() && resource.data.userId == request.auth.uid
+      );
+
+      allow create: if isValidId(bookingId) &&
+        isValidBooking(incoming()) &&
+        (!('userId' in incoming()) || (isSignedIn() && incoming().userId == request.auth.uid));
+
+      allow update: if isValidId(bookingId) &&
+        isValidBooking(incoming()) && (
+          isAdmin() || (
+            isSignedIn() &&
+            existing().userId == request.auth.uid &&
+            incoming().userId == existing().userId &&
+            incoming().bookingReference == existing().bookingReference &&
+            incoming().diff(existing()).affectedKeys().hasOnly(['status']) &&
+            existing().status == 'confirmed' &&
+            incoming().status == 'cancelled'
+          )
+        );
+
+      allow delete: if isValidId(bookingId) && isAdmin();
+    }
+
+    // Dining Reservations
+    match /dining_reservations/{reservationId} {
+      allow create: if isValidId(reservationId) && isValidDiningReservation(incoming());
+      allow get, list, update, delete: if isValidId(reservationId) && isAdmin();
+    }
+
+    // Inquiries
+    match /inquiries/{inquiryId} {
+      allow create: if isValidId(inquiryId) && isValidInquiry(incoming());
+      allow get, list, update, delete: if isValidId(inquiryId) && isAdmin();
+    }
+
+    // Newsletter Subscribers
+    match /newsletter_subscribers/{subscriberId} {
+      allow create: if isValidId(subscriberId) && isValidNewsletterSubscriber(incoming());
+      allow get, list, update, delete: if isValidId(subscriberId) && isAdmin();
+    }
+
+    // Admins registry
+    match /admins/{adminId} {
+      allow read: if isValidId(adminId) && (isAdmin() || (isSignedIn() && request.auth.uid == adminId));
+      allow write: if false;
+    }
+  }
+}

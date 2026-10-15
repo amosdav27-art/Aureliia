@@ -1,0 +1,6 @@
+{
+  "name": "The Aurelia — Luxury Hotel & Residences",
+  "description": "A modern, premium luxury hotel website featuring bespoke suite collections, Michelin-caliber dining, imperial spa amenities, curated experiences, and seamless real-time booking reservation flow.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

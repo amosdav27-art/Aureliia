@@ -1,0 +1,254 @@
+{
+  "entities": {
+    "Booking": {
+      "title": "Booking",
+      "description": "A guest reservation for a room or suite at The Aurelia.",
+      "type": "object",
+      "properties": {
+        "bookingReference": {
+          "type": "string",
+          "description": "Unique booking reference code (e.g. AUR-2026-1234)",
+          "maxLength": 32,
+          "pattern": "^[A-Z0-9\\-]+$"
+        },
+        "userId": {
+          "type": "string",
+          "description": "Firebase Auth UID of the guest if logged in, or anonymous identifier",
+          "maxLength": 128
+        },
+        "roomId": {
+          "type": "string",
+          "description": "Identifier of the reserved suite",
+          "maxLength": 64
+        },
+        "roomName": {
+          "type": "string",
+          "description": "Display name of the reserved suite",
+          "maxLength": 128
+        },
+        "checkIn": {
+          "type": "string",
+          "description": "Check-in date (YYYY-MM-DD)",
+          "maxLength": 10
+        },
+        "checkOut": {
+          "type": "string",
+          "description": "Check-out date (YYYY-MM-DD)",
+          "maxLength": 10
+        },
+        "nights": {
+          "type": "number",
+          "description": "Number of reserved nights"
+        },
+        "roomsCount": {
+          "type": "number",
+          "description": "Number of rooms or residences reserved"
+        },
+        "adults": {
+          "type": "number",
+          "description": "Number of adult guests"
+        },
+        "children": {
+          "type": "number",
+          "description": "Number of children"
+        },
+        "guestName": {
+          "type": "string",
+          "description": "Full name of the primary guest",
+          "maxLength": 128
+        },
+        "guestEmail": {
+          "type": "string",
+          "description": "Email address of the primary guest",
+          "maxLength": 128
+        },
+        "guestPhone": {
+          "type": "string",
+          "description": "Contact telephone number of primary guest",
+          "maxLength": 32
+        },
+        "specialRequests": {
+          "type": "string",
+          "description": "Special dietary, suite, or arrival requests",
+          "maxLength": 1000
+        },
+        "estimatedArrivalTime": {
+          "type": "string",
+          "description": "Estimated arrival window",
+          "maxLength": 64
+        },
+        "totalAmount": {
+          "type": "number",
+          "description": "Guaranteed total reservation amount in USD"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the reservation",
+          "enum": ["confirmed", "cancelled", "completed"],
+          "maxLength": 32
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "ISO timestamp of creation",
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "bookingReference",
+        "roomId",
+        "roomName",
+        "checkIn",
+        "checkOut",
+        "nights",
+        "roomsCount",
+        "adults",
+        "guestName",
+        "guestEmail",
+        "totalAmount",
+        "status",
+        "createdAt"
+      ]
+    },
+    "DiningReservation": {
+      "title": "DiningReservation",
+      "description": "A table reservation at one of The Aurelia's dining venues.",
+      "type": "object",
+      "properties": {
+        "venueId": {
+          "type": "string",
+          "description": "Identifier of the dining venue",
+          "maxLength": 64
+        },
+        "venueName": {
+          "type": "string",
+          "description": "Name of the dining venue",
+          "maxLength": 128
+        },
+        "name": {
+          "type": "string",
+          "description": "Guest name for the table",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "Contact email address",
+          "maxLength": 128
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number",
+          "maxLength": 32
+        },
+        "date": {
+          "type": "string",
+          "description": "Reservation date (YYYY-MM-DD)",
+          "maxLength": 10
+        },
+        "time": {
+          "type": "string",
+          "description": "Reservation seating time",
+          "maxLength": 16
+        },
+        "guests": {
+          "type": "string",
+          "description": "Party size",
+          "maxLength": 32
+        },
+        "notes": {
+          "type": "string",
+          "description": "Dietary or occasion notes",
+          "maxLength": 500
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Creation timestamp",
+          "maxLength": 64
+        }
+      },
+      "required": [
+        "venueId",
+        "venueName",
+        "name",
+        "email",
+        "date",
+        "time",
+        "guests",
+        "createdAt"
+      ]
+    },
+    "Inquiry": {
+      "title": "Inquiry",
+      "description": "A concierge or general inquiry submitted by a guest.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Guest name",
+          "maxLength": 128
+        },
+        "email": {
+          "type": "string",
+          "description": "Contact email",
+          "maxLength": 128
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact telephone",
+          "maxLength": 32
+        },
+        "category": {
+          "type": "string",
+          "description": "Inquiry category / department",
+          "maxLength": 64
+        },
+        "message": {
+          "type": "string",
+          "description": "Message content",
+          "maxLength": 2000
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of inquiry",
+          "maxLength": 64
+        }
+      },
+      "required": ["name", "email", "category", "message", "createdAt"]
+    },
+    "NewsletterSubscriber": {
+      "title": "NewsletterSubscriber",
+      "description": "Email registration for The Aurelia Gazette.",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Subscriber email address",
+          "maxLength": 128
+        },
+        "subscribedAt": {
+          "type": "string",
+          "description": "Timestamp of subscription",
+          "maxLength": 64
+        }
+      },
+      "required": ["email", "subscribedAt"]
+    }
+  },
+  "firestore": {
+    "/bookings/{bookingId}": {
+      "schema": "Booking",
+      "description": "Guest room and suite reservation records."
+    },
+    "/dining_reservations/{reservationId}": {
+      "schema": "DiningReservation",
+      "description": "Table reservation requests for hotel restaurants and lounges."
+    },
+    "/inquiries/{inquiryId}": {
+      "schema": "Inquiry",
+      "description": "Guest messages and concierge requests."
+    },
+    "/newsletter_subscribers/{subscriberId}": {
+      "schema": "NewsletterSubscriber",
+      "description": "Guest emails registered for the newsletter."
+    }
+  }
+}
